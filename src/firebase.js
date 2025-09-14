@@ -1,8 +1,8 @@
-// src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getAuth, signInAnonymously } from "firebase/auth";
+import { getFunctions } from "firebase/functions";
 
 // Config depuis Firebase Console
 const firebaseConfig = {
@@ -14,11 +14,14 @@ const firebaseConfig = {
   appId: "1:250027259784:web:d97414c4f17bab2b75ec3d",
   measurementId: "G-QKEBJMXSPZ"
 };
-
-// Initialisation
 const app = initializeApp(firebaseConfig);
 
-// Exports pour utiliser partout dans ton app
 export const db = getFirestore(app);
-export const auth = getAuth(app);
 export const storage = getStorage(app);
+export const auth = getAuth(app);
+
+// 👉 AJOUT : export des Cloud Functions (région par défaut us-central1)
+export const functions = getFunctions(app);
+
+// (optionnel) se connecter anonymement pour autoriser Storage/Functions si tes rules le requièrent
+signInAnonymously(auth).catch(() => {});

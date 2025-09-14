@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import {
   collection,
-  query,
+  query as qy,
   where,
   orderBy,
   limit,
@@ -15,65 +15,100 @@ import { Container, Row, Col, Button, Spinner, Alert } from "react-bootstrap";
 import SearchBar from "../components/SearchBar";
 import RoomCard from "../components/RoomCard";
 
+const FILTERS_KEY = "home.filters.v1";
+
 export default function Home({ navigate }) {
-  // Si Home est rendu par React Router, on utilise useNavigate()
   const nav = useNavigate();
   const goTo = (path) => (navigate ? navigate(path) : nav(path));
 
-  const [filters, setFilters] = useState({
-    city: "",
-    budgetMax: null,
-    status: "all",
+  // charge filtres depuis localStorage
+  const [filters, setFilters] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(FILTERS_KEY) || "null");
+      return (
+        saved || {
+          city: "",
+          budgetMax: null,
+          status: "all",
+        }
+      );
+    } catch {
+      return { city: "", budgetMax: null, status: "all" };
+    }
   });
+
   const [rooms, setRooms] = useState([]);
   const [cursor, setCursor] = useState(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Nettoie/normalise légèrement les filtres avant la requête
-  const normalized = useMemo(() => {
-    const city = (filters.city || "").trim();
-    const budgetMax = filters.budgetMax
-      ? Number(String(filters.budgetMax).replace(/\s/g, ""))
-      : null;
-    const status = filters.status || "all";
-    return { city, budgetMax, status };
+  // Sauvegarde auto des filtres
+  useEffect(() => {
+    localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
   }, [filters]);
 
+  // Debounce: attend 400ms après la dernière modif
+  const debounceTimer = useRef(null);
+  const [debouncedFilters, setDebouncedFilters] = useState(filters);
+  useEffect(() => {
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => setDebouncedFilters(filters), 400);
+    return () => clearTimeout(debounceTimer.current);
+  }, [filters]);
+
+  // Normalisation
+  const normalized = useMemo(() => {
+    const city = (debouncedFilters.city || "").trim();
+    const budgetMax = debouncedFilters.budgetMax
+      ? Number(String(debouncedFilters.budgetMax).replace(/\s/g, ""))
+      : null;
+    const status = debouncedFilters.status || "all";
+    return { city, budgetMax, status };
+  }, [debouncedFilters]);
+
   const buildQuery = useCallback(() => {
-    let q = query(collection(db, "rooms"));
+    let query = qy(collection(db, "rooms"));
 
-    // Filtre ville (égalité stricte)
-    if (normalized.city) q = query(q, where("city", "==", normalized.city));
-
-    // Filtre statut
-    if (normalized.status !== "all") {
-      q = query(q, where("status", "==", normalized.status));
+    if (normalized.city) {
+      query = qy(query, where("city", "==", normalized.city));
     }
 
-    // Budget max (<=)
+    if (normalized.status !== "all") {
+      query = qy(query, where("status", "==", normalized.status));
+    }
+
     if (normalized.budgetMax) {
-      q = query(q, where("pricePerMonth", "<=", normalized.budgetMax));
+      query = qy(query, where("pricePerMonth", "<=", normalized.budgetMax));
     }
 
     // Tri par récent
-    q = query(q, orderBy("createdAt", "desc"), limit(12));
-    return q;
+    query = qy(query,limit(12));
+    return query;
   }, [normalized]);
 
   const fetchFirst = useCallback(async () => {
     setError("");
     setLoading(true);
     try {
-      const q = buildQuery();
-      const snap = await getDocs(q);
+      const query = buildQuery();
+      const snap = await getDocs(query);
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRooms(list);
       setCursor(snap.docs[snap.docs.length - 1] || null);
     } catch (e) {
       console.error(e);
-      setError("Impossible de charger les chambres. Vérifiez vos règles Firestore et index.");
+      // Message plus parlant en cas d’index manquant
+      const needsIndex =
+        (e && (e.code === "failed-precondition" || String(e).includes("index"))) ||
+        String(e.message || "").toLowerCase().includes("index");
+      if (needsIndex) {
+        setError(
+          "Cette combinaison de filtres nécessite un index Firestore. Ouvre la console et clique sur “Create index”."
+        );
+      } else {
+        setError("Impossible de charger les chambres. Vérifiez les règles et la connexion.");
+      }
     } finally {
       setLoading(false);
       setInitialLoading(false);
@@ -85,9 +120,9 @@ export default function Home({ navigate }) {
     setLoading(true);
     setError("");
     try {
-      let q = buildQuery();
-      q = query(q, startAfter(cursor));
-      const snap = await getDocs(q);
+      let query = buildQuery();
+      query = qy(query, startAfter(cursor));
+      const snap = await getDocs(query);
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRooms((prev) => [...prev, ...list]);
       setCursor(snap.docs[snap.docs.length - 1] || null);
@@ -100,9 +135,13 @@ export default function Home({ navigate }) {
   }, [cursor, buildQuery]);
 
   useEffect(() => {
-    // Recharge à chaque changement de filtres
     fetchFirst();
+    // cleanup si on démonte pendant un chargement
+    return () => clearTimeout(debounceTimer.current);
   }, [fetchFirst]);
+
+  const resetFilters = () =>
+    setFilters({ city: "", budgetMax: null, status: "all" });
 
   return (
     <Container className="py-3">
@@ -112,16 +151,25 @@ export default function Home({ navigate }) {
       </div>
 
       {/* BARRE DE RECHERCHE */}
-      <div className="mb-3">
+      <div className="mb-2">
         <SearchBar onChange={setFilters} />
-        <div className="form-text">
-          Astuce : saisissez une <strong>ville</strong> exacte (ex. “Lomé”) et un
-          <strong> budget max</strong>.
+        <div className="d-flex align-items-center gap-2 mt-2">
+          <div className="form-text me-auto">
+            Astuce : saisissez une <strong>ville</strong> exacte (ex. “Lomé”) et un
+            <strong> budget max</strong>.
+          </div>
+          <Button size="sm" variant="outline-secondary" onClick={resetFilters}>
+            Réinitialiser
+          </Button>
         </div>
       </div>
 
       {/* ÉTAT: ERREUR */}
-      {error && <Alert variant="danger" className="mb-3">{error}</Alert>}
+      {error && (
+        <Alert variant="danger" className="mb-3">
+          {error}
+        </Alert>
+      )}
 
       {/* ÉTAT: CHARGEMENT INITIAL */}
       {initialLoading && (
@@ -143,7 +191,11 @@ export default function Home({ navigate }) {
 
           <div className="d-flex justify-content-center my-4">
             {cursor && (
-              <Button variant="outline-primary" onClick={fetchMore} disabled={loading}>
+              <Button
+                variant="outline-primary"
+                onClick={fetchMore}
+                disabled={loading}
+              >
                 {loading ? "Chargement…" : "Charger plus"}
               </Button>
             )}
