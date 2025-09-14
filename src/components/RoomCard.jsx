@@ -1,22 +1,37 @@
+import { Card, Badge } from "react-bootstrap";
 import { fcfa, dateStr } from "../utils/format";
 
 export default function RoomCard({ room, onClick }) {
-  const cover = room.images?.[0];
   const occupied = room.status === "en_location";
+  const cover = Array.isArray(room.images) && room.images[0];
 
   return (
-    <div className={`room-card ${occupied ? "occupied" : ""}`} onClick={onClick} role="button">
-      {cover && <img src={cover} alt={room.title} />}
-      <div className="body">
-        <h3>{room.title}</h3>
-        <p className="loc">{room.city}{room.area ? ` • ${room.area}` : ""}</p>
-        <p className="price">{fcfa(room.pricePerMonth)} / mois</p>
+    <Card className="h-100 shadow-sm" role="button" onClick={onClick}>
+      {cover && (
+        <div style={{ aspectRatio: "4/3", overflow: "hidden" }}>
+          <Card.Img
+            variant="top"
+            src={cover}
+            alt={room.title}
+            style={{ objectFit: "cover", width: "100%", height: "100%" }}
+          />
+        </div>
+      )}
+      <Card.Body>
+        <Card.Title className="h6 mb-1">{room.title}</Card.Title>
+        <Card.Subtitle className="text-muted mb-2">
+          {room.city}{room.area ? ` • ${room.area}` : ""}
+        </Card.Subtitle>
+        <div className="fw-semibold mb-2">{fcfa(room.pricePerMonth)} / mois</div>
+
         {occupied ? (
-          <p className="badge warn">En location — libération le {dateStr(room.releaseDate)}</p>
+          <Badge bg="warning" text="dark">
+            En location — libération le {dateStr(room.releaseDate)}
+          </Badge>
         ) : (
-          <p className="badge ok">Libre</p>
+          <Badge bg="success">Libre</Badge>
         )}
-      </div>
-    </div>
+      </Card.Body>
+    </Card>
   );
 }

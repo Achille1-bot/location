@@ -1,14 +1,10 @@
-// ❌ à NE PAS mettre dans React frontend
-// import 'firebase-functions';
-// import 'firebase-admin';
-
-// ✅ mets uniquement ça
+// src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage } from "firebase/storage";
 
-// Config fournie par Firebase Console
+// Config depuis Firebase Console
 const firebaseConfig = {
   apiKey: "AIzaSyBZ2IegdeGZ-C2SCLmi54mDd3g9C48PXyc",
   authDomain: "locationapp-ab325.firebaseapp.com",
@@ -19,7 +15,10 @@ const firebaseConfig = {
   measurementId: "G-QKEBJMXSPZ"
 };
 
+// Initialisation
 const app = initializeApp(firebaseConfig);
+
+// Exports pour utiliser partout dans ton app
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const storage = getStorage(app);

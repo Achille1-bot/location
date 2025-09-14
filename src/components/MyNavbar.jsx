@@ -1,0 +1,19 @@
+// src/components/MyNavbar.jsx
+import { Container, Nav, Navbar } from "react-bootstrap";
+
+export default function MyNavbar() {
+  return (
+    <Navbar bg="dark" variant="dark" expand="lg" sticky="top">
+      <Container>
+        <Navbar.Brand href="/">LocaRooms</Navbar.Brand>
+        <Navbar.Toggle aria-controls="nav" />
+        <Navbar.Collapse id="nav">
+          <Nav className="me-auto">
+            <Nav.Link href="/">Accueil</Nav.Link>
+            <Nav.Link href="/admin">Ajouter une chambre</Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
+  );
+}
