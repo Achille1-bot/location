@@ -37,14 +37,14 @@ export default function DemandeDetail() {
       <Card>
         <Card.Header>
           <h2 className="h5 mb-0">Demande de réservation</h2>
-          <Badge bg="info" className="ms-2">{id}</Badge>
+          
         </Card.Header>
         <Card.Body>
           <p><strong>Nom :</strong> {demande.name}</p>
           <p><strong>Téléphone :</strong> <a href={`https://wa.me/${demande.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer">{demande.phone}</a></p>
           <p><strong>Période :</strong> du <b>{demande.dateStart}</b> au <b>{demande.dateEnd}</b></p>
           <p><strong>Message :</strong> {demande.message}</p>
-          <p><strong>Chambre :</strong> <Badge bg="secondary">{demande.roomId}</Badge></p>
+      
           {room && (
             <>
               <p><strong>Adresse :</strong> {room.address ? room.address : "—"} {room.city ? `, ${room.city}` : ""}</p>
@@ -67,7 +67,6 @@ export default function DemandeDetail() {
                 : demande.createdAt}
             </p>
           )}
-          {/* Actions admin */}
           
         </Card.Body>
       </Card>
