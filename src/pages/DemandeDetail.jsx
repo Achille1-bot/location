@@ -68,17 +68,7 @@ export default function DemandeDetail() {
             </p>
           )}
           {/* Actions admin */}
-          <div className="mt-3">
-            <Button variant="success" className="me-2" disabled>
-              Valider la réservation
-            </Button>
-            <Button variant="danger" disabled>
-              Refuser
-            </Button>
-            <Button variant="outline-primary" href={`https://wa.me/${demande.phone.replace(/\D/g, "")}?text=Bonjour%20${encodeURIComponent(demande.name)},%20votre%20demande%20a%20été%20prise%20en%20compte.`} target="_blank">
-              Répondre sur WhatsApp
-            </Button>
-          </div>
+          
         </Card.Body>
       </Card>
     </div>
