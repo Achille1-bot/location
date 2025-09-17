@@ -65,10 +65,10 @@ Téléphone : ${form.phone}
 Du : ${form.dateStart}
 Au : ${form.dateEnd}
 Message : ${form.message}
-Voir la demande : https://votre-site.com/demande/${docRef.id}
+Voir la demande : https://location-sand-theta.vercel.app/demande/${docRef.id}
       `.trim();
       const whatsappMsg = encodeURIComponent(recap);
-      const whatsappUrl = `https://wa.me/22899740138?text=${whatsappMsg}`;
+      const whatsappUrl = `https://wa.me/22896493791?text=${whatsappMsg}`;
       window.open(whatsappUrl, "_blank");
       setToast({ show: true, message: "Demande envoyée et récap transmis sur WhatsApp !", bg: "success" });
     } catch (e) {
@@ -243,7 +243,7 @@ Durée : ${ceilHours(new Date(endAt) - new Date(startAt))} heure(s)
 Total : ${total.toLocaleString()} XOF
       `.trim();
       const whatsappMsg = encodeURIComponent(recap);
-      const whatsappUrl = `https://wa.me/22899740138?text=${whatsappMsg}`;
+      const whatsappUrl = `https://wa.me/22896493791?text=${whatsappMsg}`;
       window.open(whatsappUrl, "_blank");
       setParentToast && setParentToast({ show: true, message: "Demande envoyée sur WhatsApp !", bg: "success" });
     } catch (e) {
