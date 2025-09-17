@@ -1,9 +1,16 @@
-import { Card, Badge } from "react-bootstrap";
+import { Card, Badge, Button } from "react-bootstrap";
 import { fcfa, dateStr } from "../utils/format";
 
 export default function RoomCard({ room, onClick }) {
   const occupied = room.status === "en_location";
+  const reserved = room.status === "reservation";
   const cover = Array.isArray(room.images) && room.images[0];
+
+  // Handler pour le bouton
+  const handleRentClick = (e) => {
+    e.stopPropagation();
+    window.location.href = `/room/${room.id}`;
+  };
 
   return (
     <Card className="h-100 shadow-sm" role="button" onClick={onClick}>
@@ -25,11 +32,31 @@ export default function RoomCard({ room, onClick }) {
         <div className="fw-semibold mb-2">{fcfa(room.pricePerMonth)} / mois</div>
 
         {occupied ? (
-          <Badge bg="warning" text="dark">
-            En location — libération le {dateStr(room.releaseDate)}
-          </Badge>
+          <>
+            <Badge bg="warning" text="dark">
+              En location — libération le {dateStr(room.releaseDate)}
+            </Badge>
+          </>
+        ) : reserved ? (
+          <>
+            <Badge bg="info" text="dark">
+              En réservation
+            </Badge>
+            <div className="mt-2">
+              <Button variant="primary" size="sm" onClick={handleRentClick}>
+                Réserver
+              </Button>
+            </div>
+          </>
         ) : (
-          <Badge bg="success">Libre</Badge>
+          <>
+            <Badge bg="success">Libre</Badge>
+            <div className="mt-2">
+              <Button variant="success" size="sm" onClick={handleRentClick}>
+                Louer
+              </Button>
+            </div>
+          </>
         )}
       </Card.Body>
     </Card>

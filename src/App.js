@@ -12,7 +12,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminRooms from "./pages/AdminRooms";
 import AdminEditRoom from "./pages/AdminEditRoom";
 import RequireAuth from "./components/RequireAuth";
-
+import DemandeDetail from "./pages/DemandeDetail"; // OK (default)
 export default function App() {
   return (
     <BrowserRouter>
@@ -23,6 +23,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/room/:id" element={<RoomDetail />} />
           <Route path="/home" element={<Navigate to="/" replace />} />
+          <Route path="/demande/:id" element={<DemandeDetail />} />
 
           {/* Admin */}
           <Route path="/admin/login" element={<AdminLogin />} />
