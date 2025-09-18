@@ -9,7 +9,7 @@ export default function MyNavbar() {
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
             <Nav.Link href="/">Accueil</Nav.Link>
-            <Nav.Link href="/admin">Ajouter une chambre</Nav.Link>
+            
           </Nav>
         </Navbar.Collapse>
       </Container>
