@@ -65,7 +65,7 @@ Téléphone : ${form.phone}
 Du : ${form.dateStart}
 Au : ${form.dateEnd}
 Message : ${form.message}
-Voir la demande : https://location-sand-theta.vercel.app/demande/${docRef.id}
+Voir la demande : https://location-psi-seven.vercel.app/demande/${docRef.id}
       `.trim();
       const whatsappMsg = encodeURIComponent(recap);
       const whatsappUrl = `https://wa.me/22896493791?text=${whatsappMsg}`;
