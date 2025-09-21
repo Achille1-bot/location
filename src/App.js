@@ -13,6 +13,8 @@ import AdminRooms from "./pages/AdminRooms";
 import AdminEditRoom from "./pages/AdminEditRoom";
 import RequireAuth from "./components/RequireAuth";
 import DemandeDetail from "./pages/DemandeDetail"; // OK (default)
+import AdminReservations from "./pages/AdminReservations";
+import AdminReservationHistory from "./pages/AdminReservationHistory";
 export default function App() {
   return (
     <BrowserRouter>
@@ -35,6 +37,7 @@ export default function App() {
               </RequireAuth>
             }
           />
+
           <Route
             path="/admin/new"
             element={
@@ -51,7 +54,22 @@ export default function App() {
               </RequireAuth>
             }
           />
-
+          <Route
+            path="/admin/reservations"
+            element={
+              <RequireAuth fallback={<AdminLogin />}>
+                <AdminReservations />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin/reservations/history"
+            element={
+              <RequireAuth fallback={<AdminLogin />}>
+                <AdminReservationHistory />
+              </RequireAuth>
+            }
+          />
           {/* 404 */}
           <Route path="*" element={<div className="text-muted">Page introuvable.</div>} />
         </Routes>
